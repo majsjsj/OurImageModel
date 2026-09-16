@@ -2,8 +2,7 @@
 
 The model-specific training loop is delegated to the maintained Hugging Face
 Diffusers Qwen-Image LoRA example. This keeps the repository small while using
-an implementation that tracks Qwen-Image's current transformer/VAE/text
-conditioning stack.
+an implementation that tracks Qwen-Image's transformer/VAE/text stack.
 """
 
 from __future__ import annotations
@@ -23,7 +22,7 @@ TRAINER_URL = (
 
 
 def ensure_trainer() -> Path:
-    """Download the official trainer once; keep it outside the model repo logic."""
+    """Download the maintained Qwen-Image LoRA trainer when needed."""
     TRAINER_PATH.parent.mkdir(parents=True, exist_ok=True)
     if TRAINER_PATH.is_file() and TRAINER_PATH.stat().st_size > 10_000:
         return TRAINER_PATH
@@ -70,11 +69,13 @@ def build_command(config: dict[str, Any], trainer: Path) -> list[str]:
         "--lr_scheduler", str(training.get("lr_scheduler", "constant")),
         "--lr_warmup_steps", str(training.get("lr_warmup_steps", 0)),
         "--num_train_epochs", str(training.get("num_train_epochs", 1)),
-        "--save_steps", str(checkpointing.get("save_steps", 500)),
+        "--checkpointing_steps", str(checkpointing.get("save_steps", 500)),
         "--checkpoints_total_limit", str(checkpointing.get("save_total_limit", 3)),
         "--seed", str(logging.get("seed", training.get("seed", 42))),
         "--report_to", str(logging.get("report_to", "none")),
         "--rank", str(lora.get("rank", 16)),
+        "--lora_alpha", str(lora.get("alpha", lora.get("rank", 16))),
+        "--lora_dropout", str(lora.get("dropout", 0.0)),
         "--validation_prompt", prompt,
         "--num_validation_images", str(validation.get("num_images", 1)),
     ]
@@ -84,6 +85,8 @@ def build_command(config: dict[str, Any], trainer: Path) -> list[str]:
         command += ["--max_train_steps", str(max_steps)]
     if training.get("gradient_checkpointing", True):
         command.append("--gradient_checkpointing")
+    if training.get("use_8bit_adam", False):
+        command.append("--use_8bit_adam")
     if lora.get("target_modules"):
         command += ["--lora_layers", ",".join(lora["target_modules"])]
     resume = checkpointing.get("resume_from_checkpoint")
