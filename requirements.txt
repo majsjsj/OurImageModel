@@ -6,7 +6,7 @@ PyYAML>=6.0
 # PyTorch
 # Install the CUDA-compatible PyTorch build separately when needed.
 torch>=2.2
- torchvision>=0.17
+torchvision>=0.17
 
 # Diffusion / model tooling
 diffusers>=0.35.0
