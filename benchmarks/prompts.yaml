@@ -1,0 +1,26 @@
+# Fixed evaluation prompts for Base Qwen-Image vs OurImageModel.
+# Keep this file stable so future comparisons remain reproducible.
+version: 1
+seed: 4242
+settings:
+  width: 1024
+  height: 1024
+  steps: 30
+  guidance: 5.0
+prompts:
+  - id: luxury_watch
+    prompt: "Luxury commercial product photography of a premium mechanical wristwatch on a dark stone pedestal, dramatic studio lighting, realistic metal and sapphire glass, controlled reflections, clean premium advertising composition."
+  - id: skincare
+    prompt: "High-end commercial product photography of a minimalist skincare bottle with a cream-colored label, soft studio lighting, realistic plastic and glass materials, subtle shadows, clean luxury beauty campaign composition."
+  - id: beverage
+    prompt: "Cinematic commercial product photography of a premium glass beverage bottle with condensation droplets, dark background, warm rim lighting, realistic glass and liquid, controlled reflections, premium advertising campaign."
+  - id: headphones
+    prompt: "Premium commercial product photography of modern wireless headphones on a sculptural pedestal, dark studio environment, soft directional lighting, realistic materials, precise edges, elegant technology advertising composition."
+  - id: food_packaging
+    prompt: "Professional commercial product photography of premium packaged food standing upright on a clean studio surface, realistic packaging texture, soft directional lighting, natural shadows, polished advertising campaign composition."
+  - id: perfume
+    prompt: "Luxury perfume bottle commercial photography on polished black stone, amber liquid, realistic transparent glass, dramatic warm studio lighting, subtle reflections, premium fragrance advertising campaign."
+  - id: electronics
+    prompt: "High-end commercial product photography of a sleek smartphone on a minimalist pedestal, realistic glass and aluminum materials, controlled studio reflections, clean dark background, premium technology advertisement."
+  - id: jewelry
+    prompt: "Luxury commercial jewelry photography of an elegant gold necklace arranged on a refined stone surface, realistic gold reflections, controlled softbox lighting, macro detail, premium fashion advertising composition."
