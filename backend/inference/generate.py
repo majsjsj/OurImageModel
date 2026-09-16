@@ -1,8 +1,9 @@
 """Inference wrapper for OurImageModel.
 
-The wrapper is intentionally foundation-model agnostic. A model can be loaded
-from a local path or Hugging Face once the V1 foundation model is selected.
-The same interface can later be used by the API layer.
+The wrapper is foundation-model agnostic. It accepts output sizes up to 8K;
+high-resolution generation should use a model/pipeline that supports tiled or
+multi-stage generation rather than assuming the base model can render 8K in a
+single pass.
 """
 
 from __future__ import annotations
@@ -15,8 +16,12 @@ import torch
 from diffusers import DiffusionPipeline
 
 
+MAX_OUTPUT_SIZE = 8192
+MIN_OUTPUT_SIZE = 256
+
+
 class ImageGenerator:
-    """Load a text-to-image diffusion pipeline and generate images."""
+    """Load a diffusion pipeline and generate images at configurable sizes."""
 
     def __init__(
         self,
@@ -41,14 +46,21 @@ class ImageGenerator:
     @staticmethod
     def _resolve_dtype(dtype_name: str, device: str) -> torch.dtype:
         if dtype_name == "float16":
-            if device == "cpu":
-                return torch.float32
-            return torch.float16
+            return torch.float32 if device == "cpu" else torch.float16
         if dtype_name == "bfloat16":
             return torch.bfloat16
         if dtype_name == "float32":
             return torch.float32
         raise ValueError(f"Unsupported torch dtype: {dtype_name}")
+
+    @staticmethod
+    def _validate_dimensions(width: int, height: int) -> None:
+        if not MIN_OUTPUT_SIZE <= width <= MAX_OUTPUT_SIZE:
+            raise ValueError(f"width must be between {MIN_OUTPUT_SIZE} and {MAX_OUTPUT_SIZE}.")
+        if not MIN_OUTPUT_SIZE <= height <= MAX_OUTPUT_SIZE:
+            raise ValueError(f"height must be between {MIN_OUTPUT_SIZE} and {MAX_OUTPUT_SIZE}.")
+        if width % 8 != 0 or height % 8 != 0:
+            raise ValueError("width and height must be divisible by 8.")
 
     @torch.inference_mode()
     def generate(
@@ -62,11 +74,15 @@ class ImageGenerator:
         guidance_scale: float = 5.0,
         seed: int | None = 42,
     ) -> Path:
-        """Generate one image and save it to disk."""
+        """Generate one image and save it to disk.
+
+        The requested canvas can be 256px through 8192px on either axis.
+        Whether the selected foundation model can render that size natively is
+        model-dependent; 4K/8K production should use a tiled/multi-stage path.
+        """
         if not prompt.strip():
             raise ValueError("prompt must not be empty.")
-        if width < 256 or height < 256:
-            raise ValueError("width and height must be at least 256.")
+        self._validate_dimensions(width, height)
         if num_inference_steps < 1:
             raise ValueError("num_inference_steps must be at least 1.")
 
