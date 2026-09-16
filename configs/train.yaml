@@ -1,0 +1,72 @@
+# OurImageModel - V1 training configuration
+# This file contains the default training settings for the first LoRA pilot.
+
+project:
+  name: OurImageModel
+  version: v1
+  task: product_advertising
+
+model:
+  # Replace this with the selected foundation model before training.
+  base_model: ""
+  revision: "main"
+  torch_dtype: "float16"
+  use_safetensors: true
+
+training:
+  method: "lora"
+  output_dir: "outputs/ourimagemodel-v1"
+  seed: 42
+
+  # Pilot defaults; adjust after the first benchmark.
+  resolution: 1024
+  train_batch_size: 1
+  gradient_accumulation_steps: 4
+  num_train_epochs: 1
+  max_train_steps: null
+
+  learning_rate: 0.0001
+  lr_scheduler: "cosine"
+  lr_warmup_steps: 100
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  mixed_precision: "fp16"
+  gradient_checkpointing: true
+  enable_xformers: false
+
+lora:
+  rank: 16
+  alpha: 16
+  dropout: 0.05
+  target_modules:
+    - "to_q"
+    - "to_k"
+    - "to_v"
+    - "to_out.0"
+
+  save_format: "safetensors"
+
+# Dataset layout expected by the preprocessing pipeline.
+dataset:
+  image_dir: "dataset/images"
+  metadata_file: "dataset/metadata/metadata.jsonl"
+  caption_column: "text"
+  image_column: "image"
+  validation_split: 0.05
+  min_resolution: 512
+
+checkpointing:
+  save_steps: 500
+  save_total_limit: 3
+  resume_from_checkpoint: null
+
+logging:
+  report_to: "none"
+  logging_steps: 10
+  seed: 42
+
+validation:
+  enabled: true
+  num_images: 4
+  prompt: "Luxury commercial product photography of a premium product, studio lighting, realistic materials, clean composition, high-end advertising campaign"
