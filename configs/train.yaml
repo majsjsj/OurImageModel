@@ -1,5 +1,5 @@
 # OurImageModel - V1 training configuration
-# This file contains the default training settings for the first LoRA pilot.
+# Foundation model verified against the official Qwen-Image model card.
 
 project:
   name: OurImageModel
@@ -7,10 +7,9 @@ project:
   task: product_advertising
 
 model:
-  # Replace this with the selected foundation model before training.
-  base_model: ""
+  base_model: "Qwen/Qwen-Image"
   revision: "main"
-  torch_dtype: "float16"
+  torch_dtype: "bfloat16"
   use_safetensors: true
 
 training:
@@ -31,7 +30,7 @@ training:
   weight_decay: 0.01
   max_grad_norm: 1.0
 
-  mixed_precision: "fp16"
+  mixed_precision: "bf16"
   gradient_checkpointing: true
   enable_xformers: false
 
@@ -39,12 +38,9 @@ lora:
   rank: 16
   alpha: 16
   dropout: 0.05
-  target_modules:
-    - "to_q"
-    - "to_k"
-    - "to_v"
-    - "to_out.0"
-
+  # Model-specific target modules must be verified by the training backend
+  # before the first real run.
+  target_modules: []
   save_format: "safetensors"
 
 # Dataset layout expected by the preprocessing pipeline.
